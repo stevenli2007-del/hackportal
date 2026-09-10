@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+/* Cal Hacks brand tokens (Berkeley Blue + California Gold). Reused across the app. */
+@theme {
+  --color-berkeley-blue: #003262;
+  --color-berkeley-blue-dark: #002347;
+  --color-california-gold: #fdb515;
+  --color-california-gold-dark: #b07d00;
+}
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  background: #f8fafc;
+  color: #0f172a;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}

@@ -1,0 +1,16 @@
+# dependencies
+node_modules/
+
+# env secrets — MUST never be committed
+.env.local
+.env*.local
+
+# next.js build
+.next/
+out/
+
+# os / editor noise
+.DS_Store
+
+# local history (vs code extension) — keep out of git
+.history/
