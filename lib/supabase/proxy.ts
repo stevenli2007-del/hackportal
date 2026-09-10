@@ -32,18 +32,17 @@ export async function updateSession(request: NextRequest) {
 
   const path = request.nextUrl.pathname;
   const isProtected = path.startsWith("/apply") || path.startsWith("/dashboard") || path.startsWith("/organizer");
-  const isAuthPage = path === "/login" || path === "/signup";
 
   if (isProtected && !user) {
     const redirect = request.nextUrl.clone();
     redirect.pathname = "/login";
     return NextResponse.redirect(redirect);
   }
-  if (isAuthPage && user) {
-    const redirect = request.nextUrl.clone();
-    redirect.pathname = "/dashboard";
-    return NextResponse.redirect(redirect);
-  }
+
+  // NOTE: we intentionally do NOT bounce signed-in users away from /login and
+  // /signup. Doing so dead-ends (the redirect target /dashboard only exists from
+  // C5) and blocks switching accounts mid-demo (there is no sign-out yet).
+  // Revisit once /dashboard ships and a sign-out control exists.
 
   return supabaseResponse;
 }
