@@ -54,3 +54,31 @@ export function validateApplication(
 
   return { values, errors };
 }
+
+// Like validateApplication but for drafts: required fields are NOT enforced
+// (a draft may be partial), yet any value the applicant DID enter must still be
+// well-formed (valid email / number / select option). Used by saveDraft.
+export function validatePartial(
+  raw: Record<string, string>,
+  fields: FormField[],
+): ValidationResult {
+  const values: Record<string, string> = {};
+  const errors: Record<string, string> = {};
+
+  for (const f of fields) {
+    const v = (raw[f.key] ?? "").trim();
+    values[f.key] = v;
+    if (!v) continue; // empty is allowed in a draft
+
+    if (f.kind === "email" && !EMAIL_RE.test(v)) {
+      errors[f.key] = "Enter a valid email address.";
+    } else if (f.kind === "number" && Number.isNaN(Number(v))) {
+      errors[f.key] = `${f.label} must be a number.`;
+    } else if (f.kind === "select") {
+      const opts = f.options ?? [];
+      if (!opts.includes(v)) errors[f.key] = "Select a valid option.";
+    }
+  }
+
+  return { values, errors };
+}

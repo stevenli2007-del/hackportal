@@ -2,15 +2,21 @@
 
 import { useActionState, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { submitApplication, type ApplyState } from "@/lib/application/actions";
+import { applyAction, type ApplyState } from "@/lib/application/actions";
 import type { FormField } from "@/lib/application/validation";
 
-const initialState: ApplyState = { errors: {}, submitted: false };
+const initialState: ApplyState = { errors: {}, saved: false, submitted: false };
 
-export function ApplicationForm({ fields }: { fields: FormField[] }) {
-  const [state, formAction, pending] = useActionState(submitApplication, initialState);
-  // Local controlled state so typed values survive a re-render after validation.
-  const [values, setValues] = useState<Record<string, string>>({});
+export function ApplicationForm({
+  fields,
+  initialValues = {},
+}: {
+  fields: FormField[];
+  initialValues?: Record<string, string>;
+}) {
+  const [state, formAction, pending] = useActionState(applyAction, initialState);
+  // Seed controlled state from the saved draft so a reload re-populates the form.
+  const [values, setValues] = useState<Record<string, string>>(initialValues);
   const set = (key: string, value: string) =>
     setValues((prev) => ({ ...prev, [key]: value }));
 
@@ -79,15 +85,18 @@ export function ApplicationForm({ fields }: { fields: FormField[] }) {
         <p className="rounded-md bg-red-50 px-3 py-2 text-sm text-red-700">{err._form}</p>
       )}
 
-      {state.submitted && Object.keys(err).length === 0 && (
-        <p className="rounded-md bg-green-50 px-3 py-2 text-sm text-green-700">
-          Application validated — draft saving arrives in C4.
-        </p>
+      {state.saved && Object.keys(err).length === 0 && (
+        <p className="rounded-md bg-green-50 px-3 py-2 text-sm text-green-700">Draft saved.</p>
       )}
 
-      <Button type="submit" disabled={pending}>
-        {pending ? "Validating…" : "Save draft"}
-      </Button>
+      <div className="flex gap-3">
+        <Button type="submit" name="intent" value="draft" disabled={pending}>
+          {pending ? "Saving…" : "Save draft"}
+        </Button>
+        <Button type="submit" name="intent" value="submit" disabled={pending}>
+          {pending ? "Submitting…" : "Submit application"}
+        </Button>
+      </div>
     </form>
   );
 }
