@@ -98,6 +98,29 @@ begin
   end loop;
 end $$;
 
+-- 1c) GoTrue reads several auth.users token columns into non-nullable Go
+--     strings. Rows created by raw SQL leave these NULL, so EVERY auth call
+--     (signIn, admin listUsers, …) fails with
+--     "Database error querying schema". Backfill NULL -> '' for all users.
+--     Version-tolerant: only touches columns that actually exist.
+do $$
+declare
+  cols text[] := array[
+    'confirmation_token','recovery_token','email_change_token_new','email_change',
+    'email_change_token_current','phone_change','phone_change_token','reauthentication_token'
+  ];
+  c text;
+begin
+  foreach c in array cols loop
+    if exists (
+      select 1 from information_schema.columns
+      where table_schema = 'auth' and table_name = 'users' and column_name = c
+    ) then
+      execute format('update auth.users set %I = '''' where %I is null', c, c);
+    end if;
+  end loop;
+end $$;
+
 -- 2) form_fields — data-driven per-track questions (ADR-1).
 insert into form_fields (type, key, label, kind, options, required, position) values
   -- hacker (richest form)
