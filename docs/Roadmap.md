@@ -43,7 +43,16 @@ deliverable, not an afterthought:
   `proxy.ts` guards.
 - **C3 Form render:** read `form_fields` for the user's track; controlled form; validation per ADR-1.
 - **C4 Draft/submit:** Server Action `upsert` while `draft`; `submit` flips status, locks edits.
+  *Prerequisite — run `supabase/migrations/0002_applicant_submit.sql` in the SQL editor first.*
+  C1's `applications_update_draft` pinned `with check (status = 'draft')`, so an applicant's
+  own draft→submitted update was rejected (42501) — verified live 9/10. 0002 keeps `using`
+  at draft (submitted rows stay immutable) and widens `with check` to
+  `status in ('draft','submitted')`. After submitting, `/apply` must render the locked/read-only
+  state; redirect back to `/apply`, **not** `/dashboard` (that route lands in C5).
 - **C5 Applicant dashboard:** own application status + 3-step timeline + avg score.
+  *Also fold in here:* make the post-login redirect role-aware
+  (`organizer` → `/organizer`, applicants → `/dashboard`) — `lib/auth/actions.ts:40` currently
+  sends everyone to `/dashboard`. Deferred out of C3 (Steven, 9/10).
 - **C6 List:** `application_overview` view; table with track/status/avg-score filters.
 - **C7 Grade:** detail page renders responses + rubric; Server Action writes one `reviews` row.
 - **C8 Decide:** accept/waitlist/reject buttons set `status`; `decided_at`.
