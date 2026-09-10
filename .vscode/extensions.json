@@ -1,0 +1,26 @@
+{
+  // Recommended extensions committed to the repo. After cloning / reopening in a fresh VS Code,
+  // the editor prompts to install them in one click.
+  //
+  // Selection criterion (2026-09-10): serve ONLY "Steven reads code, dares to edit, self-diagnoses
+  // errors". They do NOT serve AI code generation — generation happens in the assistant chat, not
+  // in the IDE.
+  "recommendations": [
+    // Revert any edit to any historical snapshot without a commit — the safety net that lets Steven
+    // change a line just to see what happens.
+    "xyz.local-history",
+
+    // Turn Next 16 + Supabase generic TS errors into plain English.
+    "yoavbls.pretty-ts-errors",
+
+    // Show errors inline at the line — no hover, no problem panel.
+    "usernamehw.errorlens",
+
+    // Highlight explanatory comments and "// ?" review markers distinctly from code.
+    "aaron-bond.better-comments",
+
+    // Hover a className to see the actual computed style — the only bridge between "what the browser
+    // shows" and "what the file says".
+    "bradlc.vscode-tailwindcss"
+  ]
+}
