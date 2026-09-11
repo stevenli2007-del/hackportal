@@ -82,6 +82,7 @@ deliverable, not an afterthought:
   `lib/auth/roles.ts` (`homePathForRole`), a role-split header (organizers see only `Applications` +
   an `Organizer` chip; applicants see `Dashboard` + `My application`), and redirect guards on `/`,
   `/login`, `/signup`, `/dashboard`, `/apply`. Brand link now points at the role's home.
+  *Accepted by Steven 9/10.*
 - **C12 Deliver:** Incognito end-to-end test; README final; `// ?` resolved.
 - **C13 Video+submit:** record, fill `forms.gle/t5SJQ2bUoKspCcv77`, attach short answers.
   *Video access check (submission requirement — easy to miss under deadline pressure):* the
