@@ -84,7 +84,12 @@ deliverable, not an afterthought:
   `/login`, `/signup`, `/dashboard`, `/apply`. Brand link now points at the role's home.
   *Accepted by Steven 9/10.*
 - **C12 Deliver:** Incognito end-to-end test; README final; `// ?` resolved.
+  *Delivered 9/10.* Final Incognito pass covering the whole flow (sign up as hacker → submit →
+  sign in as the seeded organizer → grade → move a board card), plus the role-split header from
+  C11-fix. README carries the live URL + demo accounts; `// ?` sweep clean.
 - **C13 Video+submit:** record, fill `forms.gle/t5SJQ2bUoKspCcv77`, attach short answers.
+  *Delivered 9/10 — **submitted**.* ≤3-min walkthrough (applicant → organizer → Review Console) +
+  short answers. Submitted ~22:2x PDT on 9/10, ≈18h inside the 9/11 16:30 PDT deadline.
   *Video access check (submission requirement — easy to miss under deadline pressure):* the
   walkthrough video must be **public**, OR explicitly shared with **garysun@hackberkeley.org** and
   **eric_cao@hackberkeley.org**. Confirm access before submitting; a private video with no shares
@@ -117,3 +122,18 @@ non-negotiable.
   `eric_cao@hackberkeley.org` (a private video with no shares fails the criterion).
 - Short-question answers submitted.
 - Submitted by 16:30 PDT, 9/11.
+
+## Submission record
+
+**Status: submitted ✅ — project complete.**
+
+- **Date:** 2026-09-10, ~22:2x PDT (≈18h before the 9/11 16:30 PDT deadline).
+- **Live app:** `https://hackportal-tempo-70da.vercel.app`
+- **Repository:** `stevenli2007-del/hackportal` (public, default branch current).
+- **Video + short answers:** walkthrough recorded; Q1 (tech stack) / Q2 (design decisions) /
+  Q3 (AI tools) submitted via the submission form `forms.gle/t5SJQ2bUoKspCcv77`.
+- **Code freeze:** the deployed site is frozen at the verified build. Do not push behaviour-changing
+  commits during the review window.
+- **Known, harmless leftovers:** unused `lib/supabase/admin.ts` (no importers) and the
+  `SUPABASE_SERVICE_ROLE_KEY` Vercel env var it reads (not needed by the app); stray demo account
+  `stevenli2007@berkeley.edu`; `under_review` status defined but unused. None affect the submission.
