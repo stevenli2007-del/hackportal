@@ -64,6 +64,10 @@ deliverable, not an afterthought:
   is derived from the `application_overview` counters already on the row (`lib/organizer/coverage.ts`)
   — no extra query. See ADR-9.
 - **C10 Board:** kanban columns by status; drag updates status; shows aggregated score.
+  *Delivered 9/10 — no migration.* `setApplicationStage` (5-stage allowlist; `decided_at` set only on
+  terminal hops) + `decision-board.tsx` (native HTML5 drag, **no dependency** — see `TechStack.md`) +
+  `organizer-views.tsx` (Table/Board toggle, no new route). Commit `97c70fa`. A proposed
+  organizer-settable "seat capacity" tile was reviewed here and **declined by Steven**.
 - **C11 Polish:** design tokens, empty/error states, mobile.
 - **C12 Deliver:** Incognito end-to-end test; README final; `// ?` resolved.
 - **C13 Video+submit:** record, fill `forms.gle/t5SJQ2bUoKspCcv77`, attach short answers.
