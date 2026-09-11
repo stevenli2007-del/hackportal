@@ -1,0 +1,26 @@
+-- 0003_view_security_invoker.sql
+--
+-- Fixes a data-exposure defect in 0001_init.sql's `application_overview` view.
+--
+-- By default a Postgres view executes with the VIEW OWNER's rights (here the
+-- `postgres` role), so the RLS policies on the underlying tables
+-- (applications / profiles / reviews / assignments) are NOT applied to the
+-- caller. An authenticated applicant could therefore read EVERY row of
+-- `application_overview` straight from the REST API with their anon key +
+-- session, bypassing the "applicants see only their own application" rule.
+-- (Supabase linter 0010 "security definer view"; reproduced 2026-09-10 — an
+-- anon hacker session selecting the view unfiltered returned all 4 rows.)
+--
+-- Fix: make the view run with the INVOKER's rights (`security_invoker = on`,
+-- Postgres 15+), so the base-table RLS applies to whoever queries it:
+--   * organizer (is_organizer() = true) -> still sees all rows (needs the list);
+--   * applicant -> sees only their own application (applications_select), and
+--     the reviews/assignments sub-selects collapse to 0 because those policies
+--     deny applicants, so avg_score coalesces to 0. No cross-applicant leak.
+--
+-- The applicant dashboard no longer reads this view (C5 rework uses
+-- `applications` directly) and no longer displays an average score, so we do
+-- NOT need a SECURITY DEFINER RPC to preserve an applicant's own avg — this
+-- one-line hardening is sufficient.
+
+alter view public.application_overview set (security_invoker = on);

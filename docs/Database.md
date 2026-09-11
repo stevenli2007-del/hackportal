@@ -89,6 +89,12 @@ assignments with a matching `reviews` row.
 - **Applications list (F-5):** `applications` joined with `profiles` (display_name, type) and a
   computed average of `reviews.total` grouped by application. Implemented as a Postgres **view**
   `application_overview` to keep the query in one reviewed place.
+  - **Security (migration `0003_view_security_invoker.sql`):** the view is declared
+    `with (security_invoker = on)` so the base-table RLS applies to the **caller** — an organizer
+    (`is_organizer()`) sees all rows; an applicant sees only their own. Without this, a view runs as
+    its owner and bypasses RLS (Supabase linter 0010), leaking every application to any authenticated
+    user through the REST API. The applicant dashboard does not read this view, so hardening it costs
+    the applicant surface nothing.
 - **Coverage (F-7):** applications where `count(reviews) < N` for their assignments.
 
 ## 4. Row Level Security (the critical part)
