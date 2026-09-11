@@ -57,6 +57,10 @@ deliverable, not an afterthought:
 - **C7 Grade:** detail page renders responses + rubric; Server Action writes one `reviews` row.
 - **C8 Decide:** accept/waitlist/reject buttons set `status`; `decided_at`.
 - **C9 Assign+coverage:** on submit, insert N `assignments`; organizer dashboard shows coverage gaps.
+  *Prerequisite — needs a new migration (`0004`), run by Steven in the SQL editor.* The applicant's
+  `submitApplication` action cannot insert into `assignments` (policy `assignments_organizer` requires
+  `is_organizer()`), so auto-assignment must be a `security definer` trigger on `applications`
+  (status → `submitted`) or an RPC, otherwise nothing gets assigned on a real applicant submit.
 - **C10 Board:** kanban columns by status; drag updates status; shows aggregated score.
 - **C11 Polish:** design tokens, empty/error states, mobile.
 - **C12 Deliver:** Incognito end-to-end test; README final; `// ?` resolved.
@@ -65,6 +69,20 @@ deliverable, not an afterthought:
   walkthrough video must be **public**, OR explicitly shared with **garysun@hackberkeley.org** and
   **eric_cao@hackberkeley.org**. Confirm access before submitting; a private video with no shares
   fails the criterion even if the link is pasted.
+
+## Carry-over items (small, not yet assigned to a card)
+Tracked here so nothing is lost between sessions.
+- **Sign-out control** — there is still no way to log out, so switching accounts mid-demo dead-ends
+  (`lib/supabase/proxy.ts` carries a note about it). Small; fold in right after C8.
+- **README deploy URL** — `README.md` still says "set after first deploy"; the live URL is
+  `https://hackportal-tempo-70da.vercel.app`. Also add the walkthrough-video link at submit.
+- **`under_review` status** — `app_status` includes it but nothing sets it yet. Natural home is C8
+  (flip to `under_review` once grading starts).
+- **Stray demo account** — `stevenli2007@berkeley.edu` (role hacker, no application) is a leftover
+  UI signup from acceptance testing. Harmless (it never appears in the organizer list); delete only
+  if Steven says so.
+- **Applicant dashboard polish** — C5 deliberately dropped the applicant-facing average score
+  (not a prompt requirement). No action unless Steven wants it back.
 
 ## Risk buffer
 Phase 8 ends at 16:30 PDT; the final 30 min is buffer for Vercel hiccups. If a phase slips, cut
