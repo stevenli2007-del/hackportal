@@ -33,7 +33,7 @@ function reachedSteps(status: string): number {
 
 function formatDate(value: string | null) {
   if (!value) return "—";
-  return new Date(value).toLocaleDateString(undefined, {
+  return new Date(value).toLocaleDateString("en-US", {
     year: "numeric",
     month: "short",
     day: "numeric",
@@ -57,11 +57,11 @@ export default async function DashboardPage() {
     .maybeSingle();
   if (!profile) redirect("/login");
 
-  // Own application summary. application_overview computes avg_score +
-  // reviewed_count for us; we filter down to the caller's own row.
+  // The applicant's own row. RLS lets the owner read it (applications_select
+  // allows user_id = auth.uid()); no review data crosses this surface.
   const { data: application } = await supabase
-    .from("application_overview")
-    .select("status, submitted_at, decided_at, avg_score, reviewed_count")
+    .from("applications")
+    .select("status, submitted_at, decided_at")
     .eq("user_id", user.id)
     .maybeSingle();
 
@@ -113,8 +113,6 @@ function SubmittedSummary({
     status: string;
     submitted_at: string | null;
     decided_at: string | null;
-    avg_score: number | null;
-    reviewed_count: number | null;
   };
 }) {
   const banner = STATUS_BANNER[application.status] ?? {
@@ -122,7 +120,6 @@ function SubmittedSummary({
     cls: "bg-slate-100 text-slate-700",
   };
   const reached = reachedSteps(application.status);
-  const hasScore = (application.reviewed_count ?? 0) > 0;
 
   return (
     <div className="space-y-8">
@@ -177,16 +174,6 @@ function SubmittedSummary({
             <dt className="w-1/3 text-sm font-medium text-slate-500">Decided</dt>
             <dd className="w-2/3 text-sm text-slate-900">
               {formatDate(application.decided_at)}
-            </dd>
-          </div>
-        )}
-        {hasScore && (
-          <div className="flex gap-4 px-4 py-3">
-            <dt className="w-1/3 text-sm font-medium text-slate-500">
-              Average score
-            </dt>
-            <dd className="w-2/3 text-sm text-slate-900">
-              {Number(application.avg_score).toFixed(1)} / 5
             </dd>
           </div>
         )}
