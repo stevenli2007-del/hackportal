@@ -8,6 +8,7 @@ node_modules/
 # next.js build
 .next/
 out/
+*.tsbuildinfo
 
 # os / editor noise
 .DS_Store
