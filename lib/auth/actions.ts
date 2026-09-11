@@ -2,6 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { homePathForRole } from "@/lib/auth/roles";
 
 // Self-signup tracks. `organizer` is intentionally excluded — organizers are
 // created only by the seed script (see Database.md §5 / ADR-7).
@@ -42,13 +43,13 @@ export async function signIn(
 
   // Role-aware landing: organizers go straight to the organizer console;
   // everyone else lands on their applicant dashboard. Reading the profile row
-  // is RLS-scoped — a user can always read their own. Falls back to /dashboard.
+  // is RLS-scoped — a user can always read their own.
   const { data: profile } = await supabase
     .from("profiles")
     .select("role")
     .eq("id", data.user.id)
     .maybeSingle();
-  redirect(profile?.role === "organizer" ? "/organizer" : "/dashboard");
+  redirect(homePathForRole(profile?.role));
 }
 
 export async function signUp(

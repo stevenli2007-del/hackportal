@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { SignOutButton } from "@/components/auth/sign-out-button";
+import { homePathForRole } from "@/lib/auth/roles";
 
 // C11: one shared header for every signed-in surface, mounted in the root
 // layout so no page has to remember to render it.
@@ -8,6 +9,11 @@ import { SignOutButton } from "@/components/auth/sign-out-button";
 // It returns null when there is no session, which keeps /login, /signup and the
 // landing page on their own centred layouts — a nav bar with a "Sign out"
 // button above a login form would be nonsense.
+//
+// The nav is role-split on purpose: an organizer has no application of their
+// own, so "My application" would be a dead end, and an applicant can never
+// reach the organizer console. The brand link and the only nav item both point
+// at the role's own home.
 //
 // Reading the user here makes the whole app render per-request (cookies() is a
 // dynamic API). That is deliberate: a header that guessed the auth state from
@@ -34,23 +40,31 @@ export async function SiteHeader() {
     <header className="border-b border-slate-200 bg-white">
       <div className="mx-auto flex max-w-5xl flex-wrap items-center gap-x-5 gap-y-2 px-6 py-3">
         <Link
-          href="/"
-          className="text-base font-extrabold tracking-tight text-berkeley-blue"
+          href={homePathForRole(profile?.role)}
+          className="flex items-center gap-2 text-base font-extrabold tracking-tight text-berkeley-blue"
         >
           HackPortal
+          {isOrganizer && (
+            <span className="rounded-full bg-california-gold px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-berkeley-blue">
+              Organizer
+            </span>
+          )}
         </Link>
 
         <nav className="flex items-center gap-4 text-sm font-medium text-slate-600">
-          <Link href="/dashboard" className={navLink}>
-            Dashboard
-          </Link>
-          <Link href="/apply" className={navLink}>
-            My application
-          </Link>
-          {isOrganizer && (
+          {isOrganizer ? (
             <Link href="/organizer" className={navLink}>
-              Organizer
+              Applications
             </Link>
+          ) : (
+            <>
+              <Link href="/dashboard" className={navLink}>
+                Dashboard
+              </Link>
+              <Link href="/apply" className={navLink}>
+                My application
+              </Link>
+            </>
           )}
         </nav>
 

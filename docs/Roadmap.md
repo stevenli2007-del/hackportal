@@ -77,6 +77,11 @@ deliverable, not an afterthought:
   live: signed-out pages show no header, an organizer session shows `Organizer` in the nav while a
   hacker session does not, and an unknown route returns 404 with the custom page. Closes both
   carry-over items below.
+  *C11-fix (9/10):* review found the header rendered both nav sets for every role, organizers could
+  reach `/dashboard` and `/apply`, and `/` + `/login` served signed-in users a sign-in form. Fixed by
+  `lib/auth/roles.ts` (`homePathForRole`), a role-split header (organizers see only `Applications` +
+  an `Organizer` chip; applicants see `Dashboard` + `My application`), and redirect guards on `/`,
+  `/login`, `/signup`, `/dashboard`, `/apply`. Brand link now points at the role's home.
 - **C12 Deliver:** Incognito end-to-end test; README final; `// ?` resolved.
 - **C13 Video+submit:** record, fill `forms.gle/t5SJQ2bUoKspCcv77`, attach short answers.
   *Video access check (submission requirement — easy to miss under deadline pressure):* the

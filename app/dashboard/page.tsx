@@ -57,6 +57,10 @@ export default async function DashboardPage() {
     .maybeSingle();
   if (!profile) redirect("/login");
 
+  // Organizers have no application of their own — the applicant dashboard is
+  // not their surface. Mirrors the guard in app/organizer/page.tsx.
+  if (profile.role === "organizer") redirect("/organizer");
+
   // The applicant's own row. RLS lets the owner read it (applications_select
   // allows user_id = auth.uid()); no review data crosses this surface.
   const { data: application } = await supabase

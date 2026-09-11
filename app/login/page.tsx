@@ -1,7 +1,28 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { AuthForm } from "@/components/auth/auth-form";
+import { createClient } from "@/lib/supabase/server";
+import { homePathForRole } from "@/lib/auth/roles";
 
-export default function LoginPage() {
+export const dynamic = "force-dynamic";
+
+export default async function LoginPage() {
+  // Signed-in visitors have a home already. Bounce only when a profile row
+  // exists; a session with no profile is an orphan, and sending it to
+  // /dashboard would redirect straight back here forever.
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (user) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.id)
+      .maybeSingle();
+    if (profile) redirect(homePathForRole(profile.role));
+  }
+
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center gap-6 px-6">
       <div className="flex flex-col items-center gap-2 text-center">

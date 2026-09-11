@@ -39,12 +39,11 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(redirect);
   }
 
-  // NOTE: we intentionally do NOT bounce signed-in users away from /login and
-  // /signup. The dead-end this guarded against is gone — the header (C11) now
-  // carries a Sign out control, so accounts can be switched mid-demo — and a
-  // middleware bounce would have to guess the role to pick a landing page
-  // (/organizer vs /dashboard), which it cannot read cheaply here. Leaving the
-  // auth pages reachable keeps the demo recoverable if a session goes stale.
+  // Signed-in users are kept away from /login and /signup — but by those pages
+  // themselves, not here: picking the landing page needs the user's role, which
+  // this middleware cannot read without an extra profile query per request. The
+  // guard in each auth page also refuses to bounce a session with no profile
+  // row, so no redirect loop can form.
 
   return supabaseResponse;
 }

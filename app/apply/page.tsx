@@ -27,6 +27,10 @@ export default async function ApplyPage() {
     .maybeSingle();
   if (!profile) redirect("/login");
 
+  // Organizers do not apply. Without this the form_fields lookup below runs with
+  // type='organizer', matches nothing, and renders "No form yet".
+  if (profile.role === "organizer") redirect("/organizer");
+
   const { data: fields, error } = await supabase
     .from("form_fields")
     .select("id,type,key,label,kind,options,required,position")
