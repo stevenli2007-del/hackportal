@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 
 export type OrganizerRow = {
@@ -102,7 +103,14 @@ export function ApplicationsTable({ applications }: { applications: OrganizerRow
             <tbody className="divide-y divide-slate-100">
               {filtered.map((a) => (
                 <tr key={a.id} className="hover:bg-slate-50">
-                  <td className="px-4 py-3 font-medium text-slate-900">{a.display_name ?? "—"}</td>
+                  <td className="px-4 py-3 font-medium">
+                    <Link
+                      href={`/organizer/${a.id}`}
+                      className="text-berkeley-blue hover:underline"
+                    >
+                      {a.display_name ?? "—"}
+                    </Link>
+                  </td>
                   <td className="px-4 py-3 capitalize text-slate-600">{a.type}</td>
                   <td className="px-4 py-3">
                     <span
