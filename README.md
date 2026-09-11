@@ -20,16 +20,20 @@ for the data model.
 - **Review Console (self-chosen feature)** — submitted applications are auto-assigned to reviewers;
   a coverage tracker shows grading bottlenecks; a decision board (kanban) aggregates scores and lets
   organizers drag applications to a decision.
-- **Deployed** at a public URL (set after first deploy).
+- **Deployed** at a public URL: **https://hackportal-tempo-70da.vercel.app**
 
 ## Demo accounts
-Created by the seed script (see Setup). Use these to experience the organizer side without signing
-up:
+Created by the seed script (see Setup). Use these to experience both sides without signing up — the
+seeded applications are spread across all four tracks, and deliberately only some are graded, so the
+coverage tracker and decision board have something real to show:
 
-| Role | Email | Password |
-|---|---|---|
-| Organizer | `organizer@demo.hackportal.dev` | `hackportal` |
-| Hacker (submitted) | `hacker@demo.hackportal.dev` | `hackportal` |
+| Role | Email | Password | Notes |
+|---|---|---|---|
+| Organizer | `organizer@demo.hackportal.dev` | `hackportal` | sees every application, grades, decides |
+| Hacker | `hacker@demo.hackportal.dev` | `hackportal` | submitted application (read-only view) |
+| Judge | `jamie.judge@demo.hackportal.dev` | `hackportal` | submitted |
+| Mentor | `morgan.mentor@demo.hackportal.dev` | `hackportal` | submitted, left ungraded on purpose |
+| Volunteer | `val.volunteer@demo.hackportal.dev` | `hackportal` | submitted, left ungraded on purpose |
 
 > Email confirmation is disabled in the demo project so judges can sign up instantly. This is a
 > deliberate demo choice, not production auth hygiene.

@@ -69,6 +69,14 @@ deliverable, not an afterthought:
   `organizer-views.tsx` (Table/Board toggle, no new route). Commit `97c70fa`. A proposed
   organizer-settable "seat capacity" tile was reviewed here and **declined by Steven**.
 - **C11 Polish:** design tokens, empty/error states, mobile.
+  *Delivered 9/10 — no migration.* Added a shared `SiteHeader` (brand + role-aware nav + **Sign out**,
+  self-hiding when signed out) mounted in the root layout, `components/auth/sign-out-button.tsx`, a
+  `signOut` Server Action, and app-wide `app/error.tsx` / `app/not-found.tsx` boundaries. README now
+  carries the live URL + the full demo-account table. Because the header reads the session, every route
+  is server-rendered on demand — deliberate (see the comment in `components/site-header.tsx`). Verified
+  live: signed-out pages show no header, an organizer session shows `Organizer` in the nav while a
+  hacker session does not, and an unknown route returns 404 with the custom page. Closes both
+  carry-over items below.
 - **C12 Deliver:** Incognito end-to-end test; README final; `// ?` resolved.
 - **C13 Video+submit:** record, fill `forms.gle/t5SJQ2bUoKspCcv77`, attach short answers.
   *Video access check (submission requirement — easy to miss under deadline pressure):* the
@@ -78,10 +86,9 @@ deliverable, not an afterthought:
 
 ## Carry-over items (small, not yet assigned to a card)
 Tracked here so nothing is lost between sessions.
-- **Sign-out control** — there is still no way to log out, so switching accounts mid-demo dead-ends
-  (`lib/supabase/proxy.ts` carries a note about it). Small; fold in right after C8.
-- **README deploy URL** — `README.md` still says "set after first deploy"; the live URL is
-  `https://hackportal-tempo-70da.vercel.app`. Also add the walkthrough-video link at submit.
+- ~~**Sign-out control**~~ — **done in C11** (header `Sign out` → `signOut` Server Action, root layout).
+- ~~**README deploy URL**~~ — **done in C11** (`https://hackportal-tempo-70da.vercel.app` + full demo
+  account table). The walkthrough-video link is still added at C13.
 - **`under_review` status** — `app_status` includes it but nothing sets it yet. Natural home is C8
   (flip to `under_review` once grading starts).
 - **Stray demo account** — `stevenli2007@berkeley.edu` (role hacker, no application) is a leftover

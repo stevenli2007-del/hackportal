@@ -79,3 +79,14 @@ export async function signUp(
   // immediately and we can drop the user straight into the application form.
   redirect("/apply");
 }
+
+// C11: the portal's only way out. Clearing the session has to happen on the
+// server (the cookie is httpOnly and is rotated by the SSR client), so this is
+// a Server Action, not a client-side signOut(). Redirecting home afterwards
+// also guarantees the next render is signed-out even if the client cached the
+// previous page.
+export async function signOut() {
+  const supabase = await createClient();
+  await supabase.auth.signOut();
+  redirect("/");
+}

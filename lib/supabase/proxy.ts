@@ -40,9 +40,11 @@ export async function updateSession(request: NextRequest) {
   }
 
   // NOTE: we intentionally do NOT bounce signed-in users away from /login and
-  // /signup. Doing so dead-ends (the redirect target /dashboard only exists from
-  // C5) and blocks switching accounts mid-demo (there is no sign-out yet).
-  // Revisit once /dashboard ships and a sign-out control exists.
+  // /signup. The dead-end this guarded against is gone — the header (C11) now
+  // carries a Sign out control, so accounts can be switched mid-demo — and a
+  // middleware bounce would have to guess the role to pick a landing page
+  // (/organizer vs /dashboard), which it cannot read cheaply here. Leaving the
+  // auth pages reachable keeps the demo recoverable if a session goes stale.
 
   return supabaseResponse;
 }

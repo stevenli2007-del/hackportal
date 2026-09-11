@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import { SiteHeader } from "@/components/site-header";
 
 export const metadata: Metadata = {
   title: "HackPortal — Cal Hacks",
@@ -13,7 +14,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        {/* Self-hiding: renders only when a session exists (see site-header). */}
+        <SiteHeader />
+        {children}
+      </body>
     </html>
   );
 }
