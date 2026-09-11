@@ -68,3 +68,19 @@ hardcoding in code) keeps secrets out of the repo and the data in the database l
 **Why.** Interviewers read the repo directly; the Structure criterion is about readable code, which we
 achieve through naming + structure + ADRs, not comment density.
 **Trade-off.** Less hand-holding in-code; mitigated by this file and `// ?` review markers.
+
+### ADR-9 — Auto-assignment runs as a `SECURITY DEFINER` trigger, not application code
+**Decision.** When an application reaches `status = 'submitted'`, a database trigger
+(`assign_reviewers_on_submit`, migration `0004`) inserts the `assignments` rows — up to 2 organizers,
+least loaded first.
+**Why.** `submitApplication` executes in the **applicant's** session, and the only insert policy on
+`assignments` is `assignments_organizer`, which requires `is_organizer()`. The applicant's own request
+therefore can never write the rows that assign their reviewers: Postgres rejects the insert and the
+feature fails silently (no error surfaces to the applicant). The alternatives are worse — calling the
+admin client / service role from a user-facing mutation puts full-database credentials behind a public
+form POST, and an RPC would have to be remembered and called from every future write path (seed, bulk
+import, manual SQL fix). The trigger moves the privilege into the database and fires on *any*
+transition into `submitted`, whichever code or operator caused it.
+**Trade-off.** Business logic now lives in a migration, which is less discoverable than a TypeScript
+function. Mitigated by keeping it small, commented, idempotent, and documented here and in
+`Database.md` §2.6.

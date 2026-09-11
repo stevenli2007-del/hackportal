@@ -2,6 +2,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ApplicationsTable, type OrganizerRow } from "@/components/organizer/applications-table";
+import { CoverageSummary } from "@/components/organizer/coverage-summary";
 
 export const dynamic = "force-dynamic";
 
@@ -56,7 +57,10 @@ export default async function OrganizerPage() {
           No applications have been submitted yet.
         </div>
       ) : (
-        <ApplicationsTable applications={applications} />
+        <>
+          <CoverageSummary applications={applications} />
+          <ApplicationsTable applications={applications} />
+        </>
       )}
     </main>
   );

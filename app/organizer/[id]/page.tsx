@@ -88,6 +88,29 @@ export default async function ApplicationDetailPage({
     .eq("reviewer_id", user.id)
     .maybeSingle();
 
+  // Who got assigned when this application was submitted (migration 0004's
+  // trigger). Two plain queries rather than an embedded `profiles(...)` join:
+  // the embed depends on PostgREST's relationship cache, and this keeps the
+  // shape — and the ids->names mapping — obvious at a glance.
+  const { data: assignments } = await supabase
+    .from("assignments")
+    .select("reviewer_id")
+    .eq("application_id", id)
+    .order("created_at", { ascending: true });
+
+  const reviewerIds = (assignments ?? []).map((a) => String(a.reviewer_id));
+
+  let reviewerNames: string[] = [];
+  if (reviewerIds.length > 0) {
+    const { data: reviewers } = await supabase
+      .from("profiles")
+      .select("id,display_name")
+      .in("id", reviewerIds);
+    reviewerNames = ((reviewers ?? []) as { id: string; display_name: string | null }[])
+      .map((r) => r.display_name)
+      .filter((name): name is string => Boolean(name));
+  }
+
   const responses = (application?.responses ?? {}) as Record<string, string>;
   const typedFields = (fields ?? []) as FormField[];
   const typedCriteria = (criteria ?? []) as RubricCriterion[];
@@ -147,6 +170,12 @@ export default async function ApplicationDetailPage({
             <dt className="text-slate-500">Coverage</dt>
             <dd className="font-semibold text-slate-900">
               {reviewed} of {assigned} assigned reviews
+            </dd>
+          </div>
+          <div>
+            <dt className="text-slate-500">Assigned reviewers</dt>
+            <dd className="font-semibold text-slate-900">
+              {reviewerNames.length > 0 ? reviewerNames.join(", ") : "Nobody assigned yet"}
             </dd>
           </div>
           {myReview && (

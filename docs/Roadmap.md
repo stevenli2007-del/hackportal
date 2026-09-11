@@ -57,10 +57,12 @@ deliverable, not an afterthought:
 - **C7 Grade:** detail page renders responses + rubric; Server Action writes one `reviews` row.
 - **C8 Decide:** accept/waitlist/reject buttons set `status`; `decided_at`.
 - **C9 Assign+coverage:** on submit, insert N `assignments`; organizer dashboard shows coverage gaps.
-  *Prerequisite — needs a new migration (`0004`), run by Steven in the SQL editor.* The applicant's
-  `submitApplication` action cannot insert into `assignments` (policy `assignments_organizer` requires
-  `is_organizer()`), so auto-assignment must be a `security definer` trigger on `applications`
-  (status → `submitted`) or an RPC, otherwise nothing gets assigned on a real applicant submit.
+  *Delivered 9/10 — requires migration `0004_auto_assign.sql`, run by Steven in the SQL editor.* The
+  applicant's `submitApplication` action cannot insert into `assignments` (policy `assignments_organizer`
+  requires `is_organizer()`), so auto-assignment is a `security definer` trigger on `applications`
+  (status → `submitted`): up to 2 organizers, least loaded first, idempotent per application. Coverage
+  is derived from the `application_overview` counters already on the row (`lib/organizer/coverage.ts`)
+  — no extra query. See ADR-9.
 - **C10 Board:** kanban columns by status; drag updates status; shows aggregated score.
 - **C11 Polish:** design tokens, empty/error states, mobile.
 - **C12 Deliver:** Incognito end-to-end test; README final; `// ?` resolved.

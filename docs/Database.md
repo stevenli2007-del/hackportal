@@ -89,6 +89,12 @@ unique(application_id, reviewer_id)
 Records which organizers are assigned to grade which applications; the coverage tracker counts
 assignments with a matching `reviews` row.
 
+**Populated automatically** by the `SECURITY DEFINER` trigger `on_application_submitted` (migration
+`0004_auto_assign.sql`): when an application reaches `status = 'submitted'` it inserts up to
+`target_reviewers` (2) organizers, **least loaded first**, and skips any application that already has
+an assignment round. It is a trigger rather than application code because the applicant's own session
+cannot insert here — see ADR-9.
+
 ## 3. Reads the organizer needs
 - **Applications list (F-5):** `applications` joined with `profiles` (display_name, type) and a
   computed average of `reviews.total` grouped by application. Implemented as a Postgres **view**
@@ -99,7 +105,15 @@ assignments with a matching `reviews` row.
     its owner and bypasses RLS (Supabase linter 0010), leaking every application to any authenticated
     user through the REST API. The applicant dashboard does not read this view, so hardening it costs
     the applicant surface nothing.
-- **Coverage (F-7):** applications where `count(reviews) < N` for their assignments.
+- **Coverage (F-7):** `application_overview` already carries both counters, so coverage is computed in
+  the app from `reviewed_count` vs `assigned_count` — `lib/organizer/coverage.ts` is the single rule,
+  shared by the summary panel, the list filter, and the per-row badge.
+  - **Open slot** = `assigned_count - reviewed_count`, clamped at 0.
+  - **Needs review** = an *in-flight* application with at least one open slot.
+  - **Unassigned** = an in-flight application with `assigned_count = 0`, tracked separately because a
+    reviewed/assigned ratio renders `0/0` as "complete" — this is the one gap a ratio hides.
+  - **In flight** excludes `accepted` and `rejected` (the case is closed, nobody still owes a grade).
+    `waitlisted` stays in flight: a waitlisted applicant can still be promoted.
 
 ## 4. Row Level Security (the critical part)
 Enable RLS on every table. Policies:

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { isDecided, isUnassigned, needsReview, pendingReviews } from "@/lib/organizer/coverage";
 
 export type OrganizerRow = {
   id: string;
@@ -33,14 +34,17 @@ const selectCls =
 export function ApplicationsTable({ applications }: { applications: OrganizerRow[] }) {
   const [track, setTrack] = useState("");
   const [status, setStatus] = useState("");
+  const [gapsOnly, setGapsOnly] = useState(false);
 
   const filtered = useMemo(
     () =>
       applications.filter(
         (a) =>
-          (track === "" || a.type === track) && (status === "" || a.status === status),
+          (track === "" || a.type === track) &&
+          (status === "" || a.status === status) &&
+          (!gapsOnly || needsReview(a)),
       ),
-    [applications, track, status],
+    [applications, track, status, gapsOnly],
   );
 
   return (
@@ -68,11 +72,21 @@ export function ApplicationsTable({ applications }: { applications: OrganizerRow
             ))}
           </select>
         </label>
-        {(track || status) && (
+        <label className="flex items-center gap-2 text-sm font-medium text-slate-600">
+          <input
+            type="checkbox"
+            checked={gapsOnly}
+            onChange={(e) => setGapsOnly(e.target.checked)}
+            className="h-4 w-4 rounded border-slate-300 accent-berkeley-blue"
+          />
+          Needs review only
+        </label>
+        {(track || status || gapsOnly) && (
           <button
             onClick={() => {
               setTrack("");
               setStatus("");
+              setGapsOnly(false);
             }}
             className="text-sm font-semibold text-berkeley-blue hover:underline"
           >
@@ -124,8 +138,8 @@ export function ApplicationsTable({ applications }: { applications: OrganizerRow
                   <td className="px-4 py-3 text-slate-700">
                     {a.reviewed_count > 0 ? a.avg_score.toFixed(1) : "—"}
                   </td>
-                  <td className="px-4 py-3 text-slate-600">
-                    {a.reviewed_count}/{Number(a.assigned_count) || 0}
+                  <td className="px-4 py-3">
+                    <CoverageCell row={a} />
                   </td>
                 </tr>
               ))}
@@ -134,5 +148,39 @@ export function ApplicationsTable({ applications }: { applications: OrganizerRow
         </div>
       )}
     </div>
+  );
+}
+
+// Per-row coverage, rendered through the same helpers as the summary panel so
+// the two can never disagree. The `Unassigned` case gets its own badge rather
+// than showing "0/0": an application nobody was assigned to is the one failure
+// a reviewed/assigned ratio hides completely.
+function CoverageCell({ row }: { row: OrganizerRow }) {
+  const assigned = Number(row.assigned_count) || 0;
+  const reviewed = Number(row.reviewed_count) || 0;
+
+  if (isDecided(row.status)) {
+    return <span className="text-slate-400">{reviewed}/{assigned}</span>;
+  }
+
+  if (isUnassigned(row)) {
+    return (
+      <span className="inline-flex rounded-md bg-red-50 px-2 py-0.5 text-xs font-semibold text-red-700">
+        Unassigned
+      </span>
+    );
+  }
+
+  const pending = pendingReviews(row);
+
+  return (
+    <span className="inline-flex items-baseline gap-2">
+      <span className={`font-medium ${pending > 0 ? "text-amber-700" : "text-green-700"}`}>
+        {reviewed}/{assigned}
+      </span>
+      <span className="text-xs text-slate-500">
+        {pending > 0 ? `${pending} to go` : "complete"}
+      </span>
+    </span>
   );
 }
