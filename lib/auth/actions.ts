@@ -34,10 +34,21 @@ export async function signIn(
   if (!email || !password) return { error: "Email and password are required." };
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data, error } = await supabase.auth.signInWithPassword({
+    email,
+    password,
+  });
   if (error) return { error: mapAuthError(error) };
 
-  redirect("/dashboard");
+  // Role-aware landing: organizers go straight to the organizer console;
+  // everyone else lands on their applicant dashboard. Reading the profile row
+  // is RLS-scoped — a user can always read their own. Falls back to /dashboard.
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", data.user.id)
+    .maybeSingle();
+  redirect(profile?.role === "organizer" ? "/organizer" : "/dashboard");
 }
 
 export async function signUp(
