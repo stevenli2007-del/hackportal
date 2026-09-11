@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { OrganizerViews } from "@/components/organizer/organizer-views";
 import { ApplicationsTable, type OrganizerRow } from "@/components/organizer/applications-table";
 import { CoverageSummary } from "@/components/organizer/coverage-summary";
 
@@ -59,7 +60,7 @@ export default async function OrganizerPage() {
       ) : (
         <>
           <CoverageSummary applications={applications} />
-          <ApplicationsTable applications={applications} />
+          <OrganizerViews applications={applications} />
         </>
       )}
     </main>

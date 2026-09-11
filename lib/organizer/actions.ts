@@ -132,3 +132,57 @@ export async function decideApplication(
   revalidatePath("/organizer");
   return { error: null, decided: decision };
 }
+
+// C10: a board move. Reuses DecisionState — the board is just a drag-and-drop
+// front end for the same status write `decideApplication` does for the three
+// terminal decisions, extended to the two in-flight stages. One allowlist of
+// valid stages keeps any dropped column honest; the `decided_at` rule matches
+// C8: only the terminal decisions stamp a decision time, so moving a card back
+// to `submitted` / `under_review` clears it. RLS (`applications_organizer_update`,
+// 0001) already permits organizers to set any status, so no migration is needed.
+const STAGES = ["submitted", "under_review", "accepted", "waitlisted", "rejected"] as const;
+type Stage = (typeof STAGES)[number];
+const TERMINAL = new Set<Stage>(["accepted", "waitlisted", "rejected"]);
+
+export async function setApplicationStage(
+  _prev: DecisionState,
+  formData: FormData,
+): Promise<DecisionState> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Please sign in again.", decided: null };
+
+  const applicationId = String(formData.get("application_id") ?? "");
+  if (!applicationId) return { error: "Missing application.", decided: null };
+
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .maybeSingle();
+  if (profile?.role !== "organizer")
+    return { error: "Only organizers can move applications.", decided: null };
+
+  const stage = String(formData.get("stage") ?? "");
+  if (!STAGES.includes(stage as Stage))
+    return { error: "Unknown stage.", decided: null };
+
+  const patch =
+    TERMINAL.has(stage as Stage)
+      ? { status: stage, decided_at: new Date().toISOString() }
+      : { status: stage, decided_at: null };
+
+  const { data: updated, error } = await supabase
+    .from("applications")
+    .update(patch)
+    .eq("id", applicationId)
+    .select("id,status,decided_at")
+    .maybeSingle();
+  if (error || !updated) return { error: "Could not move the application.", decided: null };
+
+  revalidatePath(`/organizer/${applicationId}`);
+  revalidatePath("/organizer");
+  return { error: null, decided: updated.status };
+}
