@@ -2,6 +2,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { ReviewForm } from "@/components/organizer/review-form";
+import { DecisionForm } from "@/components/organizer/decision-form";
 import type { FormField } from "@/lib/application/validation";
 import type { RubricCriterion } from "@/lib/organizer/scoring";
 
@@ -166,6 +167,22 @@ export default async function ApplicationDetailPage({
             criteria={typedCriteria}
             initialScores={(myReview?.scores ?? {}) as Record<string, number>}
             initialNotes={myReview?.notes ?? ""}
+          />
+        )}
+      </section>
+
+      <section className="mb-8">
+        <h2 className="mb-3 text-lg font-bold text-berkeley-blue">Decision</h2>
+        {overview.status === "draft" ? (
+          <p className="rounded-md border border-slate-200 bg-white p-4 text-sm text-slate-500">
+            This application is still a draft — it can be decided once the applicant
+            submits.
+          </p>
+        ) : (
+          <DecisionForm
+            applicationId={id}
+            currentStatus={overview.status}
+            decidedAt={overview.decided_at}
           />
         )}
       </section>

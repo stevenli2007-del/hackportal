@@ -63,7 +63,72 @@ export async function saveReview(
   );
   if (error) return { error: "Could not save your grade.", saved: false };
 
+  // F-4 timeline: grading has started, so an application still in "submitted"
+  // moves to "under_review" (step 2 of the applicant timeline, dashboard/page.tsx).
+  // The `status = 'submitted'` guard stops a decided row from regressing; this
+  // flip is best-effort and must not fail the grade write above.
+  await supabase
+    .from("applications")
+    .update({ status: "under_review" })
+    .eq("id", applicationId)
+    .eq("status", "submitted");
+
   revalidatePath(`/organizer/${applicationId}`);
   revalidatePath("/organizer");
   return { error: null, saved: true };
+}
+
+export type DecisionState = {
+  error: string | null;
+  decided: string | null; // the status just written, for the confirmation line
+};
+
+// F-7: an organizer accepts / waitlists / rejects an application. The decision is
+// recorded as `status` + `decided_at`. RLS (`applications_organizer_update`,
+// 0001) is `for update using (is_organizer())`, so an organizer may write any
+// status — no migration needed. Re-deciding overwrites the previous decision.
+const DECISIONS = ["accepted", "waitlisted", "rejected"] as const;
+type Decision = (typeof DECISIONS)[number];
+
+export async function decideApplication(
+  _prev: DecisionState,
+  formData: FormData,
+): Promise<DecisionState> {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Please sign in again.", decided: null };
+
+  const applicationId = String(formData.get("application_id") ?? "");
+  if (!applicationId) return { error: "Missing application.", decided: null };
+
+  // The page hides this form from applicants, but the Server Action is a public
+  // endpoint — re-check the role here rather than trusting the UI.
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .maybeSingle();
+  if (profile?.role !== "organizer")
+    return { error: "Only organizers can decide applications.", decided: null };
+
+  // Allowlist the posted decision — never write an arbitrary status string.
+  const decision = String(formData.get("decision") ?? "");
+  if (!DECISIONS.includes(decision as Decision))
+    return { error: "Unknown decision.", decided: null };
+
+  // .select() returns the written row, so a silent RLS block (0 rows) surfaces
+  // as an error instead of a false success. Organizers have select + update here.
+  const { data: updated, error } = await supabase
+    .from("applications")
+    .update({ status: decision, decided_at: new Date().toISOString() })
+    .eq("id", applicationId)
+    .select("id,status,decided_at")
+    .maybeSingle();
+  if (error || !updated) return { error: "Could not save the decision.", decided: null };
+
+  revalidatePath(`/organizer/${applicationId}`);
+  revalidatePath("/organizer");
+  return { error: null, decided: decision };
 }
