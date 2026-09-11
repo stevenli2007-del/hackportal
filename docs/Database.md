@@ -60,7 +60,11 @@ weight   numeric not null default 1   -- relative weight in the total
 max_score int not null default 5
 position int not null
 ```
-The weighted grading rubric. `total` on a review = sum(score_i * weight_i) / sum(weight_i) * max.
+The weighted grading rubric. `total` on a review is a weighted average that stays on a 0–5
+scale: each score is normalised to its own criterion (`score / max_score`), weighted, then
+rescaled to 5 — `total = Σ((score_i / max_i) * weight_i) / Σ(weight_i) * 5`. With the seeded
+rubric every `max_score` is 5, so this reduces to the plain weighted average used in `seed.sql`
+(`(5*2 + 4*1 + 4*1) / 4 = 4.5`). Implemented in `lib/organizer/scoring.ts` (`weightedTotal`).
 
 ### 2.5 `reviews`
 ```
